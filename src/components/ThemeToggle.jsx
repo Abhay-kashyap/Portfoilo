@@ -62,7 +62,6 @@
 //   );
 // };
 
-
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -70,10 +69,9 @@ import AnimatedCursor from "react-animated-cursor";
 
 export const ThemeToggle = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [showCursor, setShowCursor] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Theme setup
     const storedTheme = localStorage.getItem("theme");
     if (storedTheme === "dark") {
       setIsDarkMode(true);
@@ -83,10 +81,16 @@ export const ThemeToggle = () => {
       localStorage.setItem("theme", "light");
     }
 
-    // Cursor visibility based on device capability (no touch devices)
-    const isTouchDevice =
-      "ontouchstart" in window || navigator.maxTouchPoints > 0;
-    setShowCursor(!isTouchDevice);
+    // Function to check screen width
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth <= 640); // Adjust 640 to your mobile breakpoint
+    };
+
+    checkIsMobile(); // Check on mount
+    window.addEventListener("resize", checkIsMobile);
+
+    // Cleanup listener on unmount
+    return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
   const toggleTheme = () => {
@@ -103,8 +107,8 @@ export const ThemeToggle = () => {
 
   return (
     <>
-      {/* Only show animated cursor on non-touch devices */}
-      {showCursor && (
+      {/* Only show animated cursor if NOT mobile */}
+      {!isMobile && (
         <AnimatedCursor
           innerSize={12}
           outerSize={40}
@@ -112,7 +116,7 @@ export const ThemeToggle = () => {
           outerAlpha={0.3}
           innerScale={1.3}
           outerScale={3}
-          trailingSpeed={6}
+          trailingSpeed={6} // Lower is faster/smoother
           clickables={["a", "button", ".link"]}
         />
       )}
